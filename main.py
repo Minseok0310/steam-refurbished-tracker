@@ -16,7 +16,7 @@ def sendEmail(model, status):
    password = "" # Password removed for privacy
    
    subject = f"Refurbished Steam Deck Stock Update"
-   body = f"{model} is now {status}, you can go purchase it at this link: https://store.steampowered.com/sale/steamdeckrefurbished/"
+   body = f"Refurbished Steamdeck {model} is now {status}, you can go purchase it at this link: https://store.steampowered.com/sale/steamdeckrefurbished/"
    
    message = f"""\
     Subject: {subject}
@@ -56,7 +56,7 @@ if len(elements) == 3:
     else:
        # If they are in stock, send an email
        stockDict[model] = "In Stock"
-       sendEmail(model)
+       sendEmail(model, stockDict[model])
 
 print(stockDict)
 
