@@ -1,9 +1,32 @@
-# Import and Setup Drivers
+# Import and Setup packages for Selenium
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+# Import packages for email
+import smtplib
+import ssl
+
+def sendEmail(model, status):
+   port = 465
+   smtp_server = "smtp.gmail.com"
+   sender_email = "x@gmail.com"  # Email address removed for privacy
+   receiver_email = "x@gmail.com"  # Email address removed for privacy
+   password = "" # Password removed for privacy
+   
+   subject = f"Refurbished Steam Deck Stock Update"
+   body = f"{model} is now {status}, you can go purchase it at this link: https://store.steampowered.com/sale/steamdeckrefurbished/"
+   
+   message = f"""\
+    Subject: {subject}
+
+    {body}"""
+   
+   context = ssl.create_default_context()
+   with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+    server.login(sender_email, password)
+    server.sendmail(sender_email, receiver_email, message)
 
 driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 10)
@@ -20,17 +43,21 @@ print("Application url is", driver.current_url)
 # Check all three stock statuses (64, 256 & 512gb)
 elements = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "I_6PnNNc2kMM38zamMgjd.CartBtn")))
 
-if len(elements) == 3:
-    models = ["64GB", "256GB", "512GB"]
-    stockStatus = []
+stockDict = {"64GB": "", "256GB": "", "512GB": ""}
 
-    for i in range(0,len(elements)):
-        if "Out of stock" in elements[i].text:
-            stockStatus.append("Out of Stock")
-        else:
-            stockStatus.append("In Stock")
-    
-    for i in range(0,len(elements)):
-        print(models[i], " is ", stockStatus[i])
+# Iterate through each element and see if they are in stock
+if len(elements) == 3:
+  models = list(stockDict.keys())
+  for index, model in enumerate(models):
+    # If they are out of stock, do nothing
+    if "Out of stock" in elements[index].text:
+        stockDict[model] = "Out of Stock"        
+
+    else:
+       # If they are in stock, send an email
+       stockDict[model] = "In Stock"
+       sendEmail(model)
+
+print(stockDict)
 
 driver.quit()
